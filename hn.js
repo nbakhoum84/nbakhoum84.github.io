@@ -7,15 +7,45 @@ function S(){F();new MutationObserver(function(){if(!t)t=setTimeout(function(){t
 if(document.body)S();else addEventListener('DOMContentLoaded',S)})();
 !function(){var e=document,t=/^please enter valid address\.?$/i,n=0;function o(){var o=e.querySelector("meta[name=viewport]");o&&(o.content="width=device-width,initial-scale=1");var r,i=e.createElement("style");function a(){n=1,e.querySelectorAll(".hn-h").forEach(function(e){e.classList.remove("hn-h")})}function c(){e.querySelectorAll("a[href]").forEach(function(e){var t,n=e.getAttribute("href").trim();(t=/^((https?:\/\/(www\.)?home-nader\.com)?(\/https\/home-nadercom)?)\/?\\+$/.test(n)?"/":"tel:"==n.slice(0,4)?"tel:"+decodeURIComponent(n.slice(4)).replace(/[^\d+]/g,""):n.replace(/^((https?:\/\/(www\.)?home-nader\.com)?)\/https\/home-nadercom\//,"$1/").replace(/(\/white-rock-listings)listing.*$/,"$1"))!==n&&e.setAttribute("href",t)}),n||e.querySelectorAll("div,span,p,label").forEach(function(e){e.children.length||e._h||!t.test(e.textContent.trim())||(e._h=1,e.classList.add("hn-h"))})}i.textContent=".hn-h{display:none!important}",e.head.appendChild(i),e.addEventListener("click",function(e){var t=e.target;(t.closest&&t.closest("button,[role=button],a")||/^(continue|search)$/i.test(t.textContent.trim()))&&a()},!0),e.addEventListener("keydown",function(e){"Enter"==e.key&&"INPUT"==e.target.tagName&&a()},!0),c(),new MutationObserver(function(){clearTimeout(r),r=setTimeout(c,200)}).observe(e.body,{childList:!0,subtree:!0})}e.body?o():addEventListener("DOMContentLoaded",o)}();
 !function(){var d=document,s=d.createElement('style');s.textContent='.nb-btn--p,.nb-book .nb-book__btn,.md-hero li.option.active{color:#1f2a33!important}.nb-book__eyebrow,.nb-cta__call a{color:#8a6420!important}';(d.head||d.documentElement).appendChild(s);function f(){d.querySelectorAll('.guile-list a.mask').forEach(function(a){if(a.getAttribute('aria-label'))return;var i=a.closest('.item'),t=i?i.textContent.replace(/\s+/g,' ').trim():'file';a.setAttribute('aria-label','Download '+t)});d.querySelectorAll('.city-image-container img').forEach(function(m){if(m.alt)m.setAttribute('alt','')})}function o(){f();var t;new MutationObserver(function(){clearTimeout(t);t=setTimeout(f,300)}).observe(d.body,{childList:true,subtree:true})}d.body?o():addEventListener('DOMContentLoaded',o)}();
-;(function(){
-// Sizes the home-nader app on the /app page (iframe #hn-app-frame, from the HTML block in site-snippet/app-embed.html in nbakhoum84/mytest).
-// This lives here because scripts inside a Lofty HTML block do not run on the published page.
-var O='https://nbakhoum84.github.io';
-function fr(){return document.getElementById('hn-app-frame')}
-function view(){var f=fr();if(!f||!f.contentWindow)return;var r=f.getBoundingClientRect(),n=0,e=document.elementFromPoint(innerWidth/2,4);for(;e&&e!==document.body;e=e.parentElement){var p=getComputedStyle(e).position;if(p==='fixed'||p==='sticky'){n=e.getBoundingClientRect().bottom;break}}f.contentWindow.postMessage({type:'hn-view',top:Math.max(0,n-r.top)},O)}
-setInterval(function(){var f=fr();if(f&&!f._hn){f._hn=1;f.addEventListener('load',view);for(var i=1;i<=10;i++)setTimeout(view,i*400);view()}},500);addEventListener('scroll',view,{passive:true});addEventListener('resize',view);
-addEventListener('message',function(e){var f=fr();if(!f||e.origin!==O||e.source!==f.contentWindow||!e.data)return;var d=e.data;
-if(d.type==='hn-app-height'&&d.height>0){f.style.height=Math.ceil(d.height)+'px';view()}
-if(d.type==='hn-app-ready')view();
-if(d.type==='hn-app-top'){var r=f.getBoundingClientRect();if(r.top<0)scrollTo({top:pageYOffset+r.top-80})}});
+;(function () {
+if (window.__hnResize) return;
+window.__hnResize = 1;
+var O = 'https://nbakhoum84.github.io', last = -1, raf = 0, inset = 0, insetAt = 0;
+function fr() { return document.getElementById('hn-app-frame'); }
+function post(m) { var f = fr(); if (f && f.contentWindow) f.contentWindow.postMessage(m, O); }
+// How far down the app the visible area starts (below the site's sticky header). Cached, because measuring it forces a layout.
+function headerInset() {
+var now = Date.now();
+if (now - insetAt < 1500) return inset;
+insetAt = now; inset = 0;
+for (var e = document.elementFromPoint(innerWidth / 2, 4); e && e !== document.body; e = e.parentElement) {
+var p = getComputedStyle(e).position;
+if (p === 'fixed' || p === 'sticky') { inset = e.getBoundingClientRect().bottom; break; }
+}
+return inset;
+}
+function view() {
+raf = 0;
+var f = fr();
+if (!f) return;
+var top = Math.max(0, Math.round(headerInset() - f.getBoundingClientRect().top));
+if (top !== last) { last = top; post({ type: 'hn-view', top: top }); }
+}
+function sched() { if (!raf) raf = requestAnimationFrame(view); }
+addEventListener('scroll', sched, { passive: true });
+addEventListener('resize', sched);
+addEventListener('message', function (e) {
+var f = fr();
+if (!f || e.origin !== O || e.source !== f.contentWindow || !e.data) return;
+var d = e.data;
+if (d.type === 'hn-app-height' && d.height > 0) { var h = Math.ceil(d.height) + 'px'; if (f.style.height !== h) f.style.height = h; last = -1; sched(); }
+if (d.type === 'hn-app-ready') { last = -1; sched(); }
+if (d.type === 'hn-app-top') { var r = f.getBoundingClientRect(); if (r.top < 0) scrollTo({ top: pageYOffset + r.top - 80 }); }
+});
+// The page is a single-page app, so the frame can appear at any time: attach to it as soon as it exists, then ask the app for its height a few times.
+setInterval(function () {
+var f = fr();
+if (f && !f._hn) { f._hn = 1; f.addEventListener('load', ping); for (var i = 0; i <= 8; i++) setTimeout(ping, i * 500); }
+}, 500);
+function ping() { last = -1; post({ type: 'hn-ping' }); sched(); }
 })();
