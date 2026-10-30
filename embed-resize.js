@@ -14,6 +14,8 @@
     }
     f.contentWindow.postMessage({ type: 'hn-view', top: Math.max(0, n - r.top) }, O);
   }
+  var fr0 = fr(); if (fr0) fr0.addEventListener('load', view);
+  for (var i = 1; i <= 20; i++) setTimeout(view, i * 400);
   addEventListener('scroll', view, { passive: true });
   addEventListener('resize', view);
   addEventListener('message', function (e) {

@@ -13,7 +13,7 @@ if(document.body)S();else addEventListener('DOMContentLoaded',S)})();
 var O='https://nbakhoum84.github.io';
 function fr(){return document.getElementById('hn-app-frame')}
 function view(){var f=fr();if(!f||!f.contentWindow)return;var r=f.getBoundingClientRect(),n=0,e=document.elementFromPoint(innerWidth/2,4);for(;e&&e!==document.body;e=e.parentElement){var p=getComputedStyle(e).position;if(p==='fixed'||p==='sticky'){n=e.getBoundingClientRect().bottom;break}}f.contentWindow.postMessage({type:'hn-view',top:Math.max(0,n-r.top)},O)}
-addEventListener('scroll',view,{passive:true});addEventListener('resize',view);
+setInterval(function(){var f=fr();if(f&&!f._hn){f._hn=1;f.addEventListener('load',view);for(var i=1;i<=10;i++)setTimeout(view,i*400);view()}},500);addEventListener('scroll',view,{passive:true});addEventListener('resize',view);
 addEventListener('message',function(e){var f=fr();if(!f||e.origin!==O||e.source!==f.contentWindow||!e.data)return;var d=e.data;
 if(d.type==='hn-app-height'&&d.height>0){f.style.height=Math.ceil(d.height)+'px';view()}
 if(d.type==='hn-app-ready')view();
